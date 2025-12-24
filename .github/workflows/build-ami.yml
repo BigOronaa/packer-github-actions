@@ -13,7 +13,7 @@ jobs:
   validate-packer:
     runs-on: ubuntu-latest
     steps:
-      # 1. Checkout the repository
+      # 1. Checkout repository
       - name: Checkout repository
         uses: actions/checkout@v3
 
@@ -24,11 +24,17 @@ jobs:
           packer_version: latest
           install_plugins: true
 
-      # 3. Initialize Packer plugins for HCL2 template
-      - name: Initialize Packer plugins
-        run: packer init packer/aws-ami.pkr.hcl
+      # 3. Setup Packer cache directory
+      - name: Setup Packer Cache
+        run: mkdir -p ~/.packer.d
+        env:
+          PACKER_CACHE_DIR: ~/.packer.d
 
-      # 4. Validate the Packer template
+      # 4. Initialize Packer plugins
+      - name: Initialize Packer plugins
+        run: packer init -upgrade packer/aws-ami.pkr.hcl
+
+      # 5. Validate Packer template
       - name: Validate Packer template
         run: packer validate packer/aws-ami.pkr.hcl
 
@@ -36,7 +42,7 @@ jobs:
     needs: validate-packer
     runs-on: ubuntu-latest
     steps:
-      # 1. Checkout the repository
+      # 1. Checkout repository
       - name: Checkout repository
         uses: actions/checkout@v3
 
@@ -47,11 +53,17 @@ jobs:
           packer_version: latest
           install_plugins: true
 
-      # 3. Initialize Packer plugins for HCL2 template
-      - name: Initialize Packer plugins
-        run: packer init packer/aws-ami.pkr.hcl
+      # 3. Setup Packer cache directory
+      - name: Setup Packer Cache
+        run: mkdir -p ~/.packer.d
+        env:
+          PACKER_CACHE_DIR: ~/.packer.d
 
-      # 4. Configure AWS credentials securely
+      # 4. Initialize Packer plugins
+      - name: Initialize Packer plugins
+        run: packer init -upgrade packer/aws-ami.pkr.hcl
+
+      # 5. Configure AWS credentials
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
@@ -59,7 +71,7 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
-      # 5. Build the AMI
+      # 6. Build AMI
       - name: Build AMI
         run: |
           cd packer
@@ -68,7 +80,7 @@ jobs:
             -var "source_ami=${{ env.SOURCE_AMI }}" \
             aws-ami.pkr.hcl
 
-      # 6. Upload the manifest.json artifact
+      # 7. Upload AMI manifest
       - name: Upload AMI manifest
         uses: actions/upload-artifact@v4
         with:
