@@ -4,32 +4,39 @@ on:
   push:
     branches: [ "main" ]
   workflow_dispatch:
+
 env:
   AWS_REGION: us-east-1
   SOURCE_AMI: ami-0c55b159cbfafe1f0
+
 jobs:
   validate-packer:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
 
       - name: Setup Packer
         uses: hashicorp/setup-packer@v3
+        with:
+          packer_version: latest
+          install_plugins: true  # <- fixes amazon-ebs plugin issue
 
       - name: Validate Packer template
         run: packer validate packer/aws-ami.pkr.hcl
+
   build-ami:
     needs: validate-packer
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
 
       - name: Setup Packer
         uses: hashicorp/setup-packer@v3
+        with:
+          packer_version: latest
+          install_plugins: true  # <- fixes amazon-ebs plugin issue
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v2
