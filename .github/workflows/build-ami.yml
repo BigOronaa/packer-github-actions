@@ -13,28 +13,18 @@ jobs:
   validate-packer:
     runs-on: ubuntu-latest
     steps:
-      # 1. Checkout repository
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      # 2. Setup Packer
       - name: Setup Packer
         uses: hashicorp/setup-packer@v3
         with:
           packer_version: latest
           install_plugins: true
 
-      # 3. Setup Packer cache directory
-      - name: Setup Packer Cache
-        run: mkdir -p ~/.packer.d
-        env:
-          PACKER_CACHE_DIR: ~/.packer.d
-
-      # 4. Initialize Packer plugins
       - name: Initialize Packer plugins
         run: packer init -upgrade packer/aws-ami.pkr.hcl
 
-      # 5. Validate Packer template
       - name: Validate Packer template
         run: packer validate packer/aws-ami.pkr.hcl
 
@@ -42,28 +32,18 @@ jobs:
     needs: validate-packer
     runs-on: ubuntu-latest
     steps:
-      # 1. Checkout repository
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      # 2. Setup Packer
       - name: Setup Packer
         uses: hashicorp/setup-packer@v3
         with:
           packer_version: latest
           install_plugins: true
 
-      # 3. Setup Packer cache directory
-      - name: Setup Packer Cache
-        run: mkdir -p ~/.packer.d
-        env:
-          PACKER_CACHE_DIR: ~/.packer.d
-
-      # 4. Initialize Packer plugins
       - name: Initialize Packer plugins
         run: packer init -upgrade packer/aws-ami.pkr.hcl
 
-      # 5. Configure AWS credentials
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
@@ -71,7 +51,6 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
-      # 6. Build AMI
       - name: Build AMI
         run: |
           cd packer
@@ -80,7 +59,6 @@ jobs:
             -var "source_ami=${{ env.SOURCE_AMI }}" \
             aws-ami.pkr.hcl
 
-      # 7. Upload AMI manifest
       - name: Upload AMI manifest
         uses: actions/upload-artifact@v4
         with:
