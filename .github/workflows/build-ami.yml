@@ -7,7 +7,7 @@ on:
 
 env:
   AWS_REGION: us-east-1
-  SOURCE_AMI: ami-0c55b159cbfafe1f0
+  SOURCE_AMI: ami-068c0051b15cdb816   # Updated to Amazon Linux 2023
 
 jobs:
   validate-packer:
