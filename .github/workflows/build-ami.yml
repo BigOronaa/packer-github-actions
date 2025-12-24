@@ -1,0 +1,53 @@
+name: Build and Publish AMI
+
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+env:
+  AWS_REGION: us-east-1
+  SOURCE_AMI: ami-0c55b159cbfafe1f0
+jobs:
+  validate-packer:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Setup Packer
+        uses: hashicorp/setup-packer@v3
+
+      - name: Validate Packer template
+        run: packer validate packer/aws-ami.pkr.hcl
+  build-ami:
+    needs: validate-packer
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Setup Packer
+        uses: hashicorp/setup-packer@v3
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Build AMI
+        run: |
+          cd packer
+          packer build \
+            -var "aws_region=${{ env.AWS_REGION }}" \
+            -var "source_ami=${{ env.SOURCE_AMI }}" \
+            aws-ami.pkr.hcl
+
+      - name: Upload AMI manifest
+        uses: actions/upload-artifact@v4
+        with:
+          name: ami-manifest
+          path: packer/manifest.json
