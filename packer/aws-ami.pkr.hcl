@@ -19,7 +19,7 @@ variable "source_ami" {
 
 variable "instance_type" {
   type    = string
-  default = "t3a.micro"
+  default = "t3.small"
 }
 
 source "amazon-ebs" "web_server" {
